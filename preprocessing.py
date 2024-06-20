@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 import cv2 as cv
 import matplotlib.pyplot as plt
+
 def reformat_box(box):
     x = (float(box['xtl']))
     y = (float(box['ytl']))
@@ -53,10 +54,11 @@ def display_dataset_entries(dataset, num_entries=20):
         # Display the image
         ax.imshow(img, cmap='gray')
 
-        # Draw the bounding box
-        rect = plt.Rectangle((bbox['x'], bbox['y']), bbox['width'], bbox['height'],
-                             linewidth=2, edgecolor='r', facecolor='none')
-        ax.add_patch(rect)
+        if bbox:
+            # Draw the bounding box
+            rect = plt.Rectangle((bbox['x'], bbox['y']), bbox['width'], bbox['height'],
+                                 linewidth=2, edgecolor='r', facecolor='none')
+            ax.add_patch(rect)
 
         # Set the title
         ax.set_title(f"Entry {idx + 1}")
@@ -142,10 +144,10 @@ def tune_test_ds(dataset):
     return dataset
 
 
-def visualise_tensorised(ts_dataset, input_size=244):
+def visualise_tensorised(ts_dataset, input_size=244, count=32):
     plt.figure(figsize=(20, 10))
     for images, labels in ts_dataset.take(1):
-        for i in range(32):
+        for i in range(min(len(images), count)):
             ax = plt.subplot(4, 32 // 4, i + 1)
             label = labels[0][i]
             box = (labels[1][i] * input_size)

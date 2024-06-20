@@ -1,18 +1,22 @@
 import os
+import random
 import xml.etree.ElementTree as ET
 import cv2 as cv
 
 from data_handling.dataset_image import Image
-from preprocessing import reformat_box, format_image
+from preprocessing import reformat_box, format_image, _tensorize_dataset, tensorize_training_dataset, \
+    tensorize_validation_dataset, tensorize_test_dataset, display_dataset_entries, visualise_tensorised
 
 
 class Dataset:
-    def __init__(self, dataset_folder: str = None, dataset_entries: dict = None, image_size=244):
+    def __init__(self, dataset_folder: str = None, dataset_entries: dict = None, image_size=244, train_ratio=70,
+                 validation_ratio=20, test_ratio=10, random_seed=0):
         """
 
         :param dataset_entries: {'entry_name': [folder_with_images, annotation_file]}
         """
         if dataset_folder is not None:
+            self.root_folder = dataset_folder
             self.entries = self._load_folder(dataset_folder)
         elif dataset_entries is not None:
             self.entries = dataset_entries
@@ -20,7 +24,11 @@ class Dataset:
             raise ValueError('No dataset folder or entries provided')
 
         self.data = self._preload_dataset()
+
         self.image_size = image_size
+        self.random_seed = random_seed
+        self.train_end = int(len(self.images) * (train_ratio / 100))
+        self.validation_end = self.train_end + int(len(self.images) * (validation_ratio / 100))
 
     @property
     def images(self):
@@ -29,6 +37,38 @@ class Dataset:
             images.extend(self.data[entry])
 
         return images
+
+    def load_images(self):
+        self._load_dataset()
+
+    def train_test_split(self):
+        dataset = self.images
+
+        random.seed(self.random_seed)
+
+        random.shuffle(dataset)
+
+        return dataset[:self.train_end], dataset[self.train_end:self.validation_end], dataset[self.validation_end:]
+
+    def tensorize_dataset(self):
+        return _tensorize_dataset(self.images)
+
+    def tensorized_train_test_split(self):
+        train, validation, test = self.train_test_split()
+
+        return tensorize_training_dataset(train), tensorize_validation_dataset(validation), tensorize_test_dataset(test)
+
+    def preview_dataset(self, sample=None, count=32):
+        if count > len(self.images):
+            count = len(self.images)
+
+        if sample is None:
+            sample = random.sample(self.images, count)
+
+        display_dataset_entries(sample)
+
+    def preview_tensorised(self, ts_dataset, count=32):
+        visualise_tensorised(ts_dataset, input_size=self.image_size, count=count)
 
     def _load_folder(self, folder):
         def find_annotations(folder, files):
@@ -40,7 +80,6 @@ class Dataset:
             return None
 
         entries = {}
-
 
         # walk the folder and record every xml file and the folder it is located in
         for root1, e_dirs, _ in os.walk(folder):
@@ -64,8 +103,7 @@ class Dataset:
 
     def _load_dataset(self):
         for entry in self.data:
-            entry_folder = self.entries[entry][0]
-            self._load_images(entry, entry_folder)
+            self._load_images(entry, self.root_folder)
 
     def _preload_entry(self, xml_file):
         img_list = []
@@ -87,15 +125,9 @@ class Dataset:
 
         return img_list
 
-    def _load_images(self, entry, entry_folder):
-        def sanitaze_entry_folder(entry_folder):
-            if entry_folder[-1] == '/':
-                return entry_folder
-            else:
-                return entry_folder + '/'
-
+    def _load_images(self, entry, root_folder):
         for i in self.data[entry]:
-            img = cv.imread(sanitaze_entry_folder(entry_folder) + i.image_path, cv.IMREAD_GRAYSCALE)
+            img = cv.imread(root_folder + i.image_path, cv.IMREAD_GRAYSCALE)
 
             if i.bounding_box:
                 img_box = reformat_box(i.bounding_box)
