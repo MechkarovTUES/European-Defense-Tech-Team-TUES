@@ -1,4 +1,4 @@
-class Entry:
+class Image:
     def __init__(self, image_path, resolution: tuple, bounding_box):
         self.image = None
         self.image_path = image_path

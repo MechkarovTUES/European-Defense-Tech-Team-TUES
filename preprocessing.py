@@ -3,10 +3,6 @@ import numpy as np
 import tensorflow as tf
 import cv2 as cv
 import matplotlib.pyplot as plt
-
-max_size = 244
-
-
 def reformat_box(box):
     x = (float(box['xtl']))
     y = (float(box['ytl']))
@@ -17,17 +13,17 @@ def reformat_box(box):
     return {'x': x, 'y': y, 'width': w, 'height': h}
 
 
-def format_image(img, box):
+def format_image(img, box, input_size):
     height, width = img.shape
-    height_ratio = height / max_size
-    width_ratio = width / max_size
+    height_ratio = height / input_size
+    width_ratio = width / input_size
 
     new_width = int(width / width_ratio)
     new_height = int(height / height_ratio)
 
     new_size = (new_width, new_height)
     resized = cv.resize(img, new_size, interpolation=cv.INTER_LINEAR)
-    new_image = np.zeros((max_size, max_size), dtype=np.uint8)
+    new_image = np.zeros((input_size, input_size), dtype=np.uint8)
     new_image[0:new_height, 0:new_width] = resized
 
     if box:
@@ -144,3 +140,27 @@ def tune_test_ds(dataset):
     dataset = dataset.batch(1)
     dataset = dataset.repeat()
     return dataset
+
+
+def visualise_tensorised(ts_dataset, input_size=244):
+    plt.figure(figsize=(20, 10))
+    for images, labels in ts_dataset.take(1):
+        for i in range(32):
+            ax = plt.subplot(4, 32 // 4, i + 1)
+            label = labels[0][i]
+            box = (labels[1][i] * input_size)
+            box = tf.cast(box, tf.int32)
+
+            image = images[i].numpy().astype("float") * 255.0
+            image = image.astype(np.uint8)
+            image_color = cv.cvtColor(image, cv.COLOR_GRAY2RGB)
+
+            color = (0, 0, 255)
+            if label[0] > 0:
+                color = (0, 255, 0)
+
+            cv.rectangle(image_color, box.numpy(), color, 2)
+
+            plt.imshow(image_color)
+            plt.axis("off")
+    plt.show()

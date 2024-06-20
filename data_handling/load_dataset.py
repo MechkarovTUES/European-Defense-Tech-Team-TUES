@@ -7,8 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-from image_class import Entry
-from preprocessing import reformat_box, format_image, display_dataset_entries, tensorize_training_dataset, tensorize_validation_dataset, tensorize_test_dataset
+from dataset_image import Image
+from preprocessing import reformat_box, format_image, display_dataset_entries, tensorize_training_dataset, tensorize_validation_dataset, tensorize_test_dataset, visualise_tensorised
 
 def load_dataset(xml_file: str):
     dataset = []
@@ -26,7 +26,7 @@ def load_dataset(xml_file: str):
         except IndexError:
             bounding_box = None
 
-        dataset.append(Entry(filename, resolution, bounding_box))
+        dataset.append(Image(filename, resolution, bounding_box))
 
     return dataset
 
@@ -59,7 +59,7 @@ def load_images(dataset):
 
 
 if __name__ == "__main__":
-    dataset = load_dataset("annotations.xml")
+    dataset = load_dataset("../annotations.xml")
     load_images(dataset)
 
     train_ds, val_ds, test_ds = train_test_split(dataset)
@@ -67,5 +67,7 @@ if __name__ == "__main__":
     train_ds = tensorize_training_dataset(train_ds)
     val_ds = tensorize_validation_dataset(val_ds)
     test_ds = tensorize_test_dataset(test_ds)
+
+    #visualise_tensorised(train_ds)
 
     print(len(val_ds))

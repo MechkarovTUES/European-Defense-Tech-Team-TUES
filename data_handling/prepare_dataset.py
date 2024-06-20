@@ -89,5 +89,5 @@ if __name__ == '__main__':
         traverse_by_date(date_subdir)
 
 
-    copy_to_output('new_output/')
+    copy_to_output('../new_output/')
     print(mine_dataset)
