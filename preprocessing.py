@@ -4,6 +4,7 @@ import tensorflow as tf
 import cv2 as cv
 import matplotlib.pyplot as plt
 
+
 def reformat_box(box):
     x = (float(box['xtl']))
     y = (float(box['ytl']))
@@ -108,6 +109,7 @@ def tensorize_training_dataset(dataset):
 def tensorize_validation_dataset(dataset):
     return tune_validation_ds(_tensorize_dataset(dataset))
 
+
 def tensorize_test_dataset(dataset):
     return tune_test_ds(_tensorize_dataset(dataset))
 
@@ -118,13 +120,12 @@ def format_instance(image, label):
     return image, (tf.one_hot(int(label[4]), CLASSES), [label[0], label[1], label[2], label[3]])
 
 
-
 def tune_training_ds(dataset):
     BATCH_SIZE = 32
 
     dataset = dataset.map(format_instance, num_parallel_calls=tf.data.AUTOTUNE)
     dataset = dataset.shuffle(1024, reshuffle_each_iteration=True)
-    dataset = dataset.repeat() # The dataset be repeated indefinitely.
+    dataset = dataset.repeat()  # The dataset be repeated indefinitely.
     dataset = dataset.batch(BATCH_SIZE)
     dataset = dataset.prefetch(tf.data.AUTOTUNE)
     return dataset
@@ -142,6 +143,26 @@ def tune_test_ds(dataset):
     dataset = dataset.batch(1)
     dataset = dataset.repeat()
     return dataset
+
+
+def untensorize_image(t_image: tf.Tensor, label: tf.Tensor, bbox: tf.Tensor, input_size: int = 244):
+    n_image = (t_image.numpy().astype("float") * 255.0).astype(np.uint8)
+    n_bbox = (bbox * input_size)
+    n_bbox = tf.cast(n_bbox, tf.int32)
+    return n_image, label[0], n_bbox
+
+
+def visualise_tensor_prediction(t_image: tf.Tensor, label: tf.Tensor, bbox: tf.Tensor, input_size: int = 244):
+    n_image, label, n_bbox = untensorize_image(t_image, label, bbox)
+
+    visualise_normal_prediction(n_image, label, n_bbox)
+
+def visualise_normal_prediction(image, label, bbox):
+    image_color = cv.cvtColor(image, cv.COLOR_GRAY2RGB)
+
+    cv.rectangle(image_color, bbox.numpy(), (0, 255, 0), 2)
+    plt.imshow(image_color)
+    plt.show()
 
 
 def visualise_tensorised(ts_dataset, input_size=244, count=32):
