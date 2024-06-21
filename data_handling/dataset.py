@@ -38,6 +38,10 @@ class Dataset:
 
         return images
 
+    @property
+    def size(self):
+        return len(self.images)
+
     def load_images(self):
         self._load_dataset()
 
@@ -69,6 +73,9 @@ class Dataset:
 
     def preview_tensorised(self, ts_dataset, count=32):
         visualise_tensorised(ts_dataset, input_size=self.image_size, count=count)
+
+    def reseed(self, new_random_seed):
+        self.random_seed = new_random_seed
 
     def _load_folder(self, folder):
         def find_annotations(folder, files):

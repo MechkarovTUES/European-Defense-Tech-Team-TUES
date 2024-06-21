@@ -56,18 +56,3 @@ def load_images(dataset):
         entry.bounding_box = img_box
 
         entry.load_image(img)
-
-
-if __name__ == "__main__":
-    dataset = load_dataset("../annotations.xml")
-    load_images(dataset)
-
-    train_ds, val_ds, test_ds = train_test_split(dataset)
-
-    train_ds = tensorize_training_dataset(train_ds)
-    val_ds = tensorize_validation_dataset(val_ds)
-    test_ds = tensorize_test_dataset(test_ds)
-
-    #visualise_tensorised(train_ds)
-
-    print(len(val_ds))
