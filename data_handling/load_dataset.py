@@ -2,13 +2,9 @@ import random
 import xml.etree.ElementTree as ET
 import cv2 as cv
 
-import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-
 
 from dataset_image import Image
-from preprocessing import reformat_box, format_image, display_dataset_entries, tensorize_training_dataset, tensorize_validation_dataset, tensorize_test_dataset, visualise_tensorised
+from preprocessing import format_image, display_dataset_entries, tensorize_training_dataset, tensorize_validation_dataset, tensorize_test_dataset, visualise_tensorised
 
 def load_dataset(xml_file: str):
     dataset = []
@@ -47,7 +43,8 @@ def load_images(dataset):
         img = cv.imread('new_output/' + entry.image_path, cv.IMREAD_GRAYSCALE)
 
         if entry.bounding_box:
-            img_box = reformat_box(entry.bounding_box)
+            #img_box = reformat_box(entry.bounding_box)
+            img_box = entry.bounding_box
             entry.bounding_box = img_box
         else:
             img_box = None

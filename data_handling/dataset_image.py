@@ -1,12 +1,26 @@
 class Image:
-    def __init__(self, image_path, resolution: tuple, bounding_box):
+    def __init__(self, image_path, resolution: tuple, bounding_boxes):
         self.image = None
         self.image_path = image_path
         self.resolution = resolution
-        self.bounding_box = bounding_box
+        self.bounding_boxes = bounding_boxes
 
     def load_image(self, image):
         self.image = image
 
     def get_img_name(self):
         return self.image_path.split('/')[-1]
+
+    @property
+    def coco_bounding_boxes(self):
+        bounding_boxes = []
+        for box in self.bounding_boxes:
+            x = (float(box['xtl']))
+            y = (float(box['ytl']))
+
+            w = abs((float(box['xtl'])) - (float(box['xbr'])))
+            h = abs((float(box['ytl'])) - (float(box['ybr'])))
+
+            bounding_boxes.append([x, y, w, h])
+
+        return bounding_boxes

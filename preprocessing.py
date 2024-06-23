@@ -5,17 +5,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 
 
-def reformat_box(box):
-    x = (float(box['xtl']))
-    y = (float(box['ytl']))
-
-    w = abs((float(box['xtl'])) - (float(box['xbr'])))
-    h = abs((float(box['ytl'])) - (float(box['ybr'])))
-
-    return {'x': x, 'y': y, 'width': w, 'height': h}
-
-
-def format_image(img, box, input_size):
+def format_image(img, boxes, input_size):
     height, width = img.shape
     height_ratio = height / input_size
     width_ratio = width / input_size
@@ -28,14 +18,17 @@ def format_image(img, box, input_size):
     new_image = np.zeros((input_size, input_size), dtype=np.uint8)
     new_image[0:new_height, 0:new_width] = resized
 
-    if box:
-        x, y, w, h = box['x'], box['y'], box['width'], box['height']
-        new_box = {'x': int((x / width_ratio)), 'y': int(y / height_ratio)
-            , 'width': int(w / width_ratio), 'height': int(h / height_ratio)}
+    if boxes:
+        new_boxes = []
+        for box in boxes:
+            x, y, w, h = box[0], box[1], box[2], box[3]
+            new_box = [int((x / width_ratio)), int(y / height_ratio)
+                , int(w / width_ratio), int(h / height_ratio)]
+            new_boxes.append(new_box)
     else:
-        new_box = None
+        new_boxes = None
 
-    return new_image, new_box
+    return new_image, new_boxes
 
 
 def display_dataset_entries(dataset, num_entries=20):
@@ -81,10 +74,10 @@ def _tensorize_dataset(dataset):
         images.append(img)
 
         if entry.bounding_box:
-            bbox_array = [entry.bounding_box['x'], entry.bounding_box['y'], entry.bounding_box['width'],
-                          entry.bounding_box['height']]
+            bboxes_array = [entry.bounding_box[0], entry.bounding_box[1], entry.bounding_box[2],
+                          entry.bounding_box[3]]
 
-            bounding_box = np.asarray(bbox_array, dtype=float) / img_size[0]
+            bounding_box = np.asarray(bboxes_array, dtype=float) / img_size[0]
             boxes.append(np.append(bounding_box, 1))
         else:
             boxes.append(np.zeros(5))
