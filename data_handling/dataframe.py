@@ -25,6 +25,9 @@ class Dataframe:
 
         else:
             if dataset_folder is not None:
+                if dataset_folder[-1] != '/':
+                    dataset_folder += '/'
+
                 self.root_folder = dataset_folder
                 self.entries = self._load_folder(dataset_folder)
             elif dataset_entries is not None:
@@ -168,7 +171,8 @@ class Dataframe:
 
     def _load_dataset(self):
         for entry in self.data:
-            self._load_images(entry, self.root_folder)
+            entry_folder = self.entries[entry][0]
+            self._load_images(entry, entry_folder)
 
     def _preload_entry(self, xml_file):
         img_list = []
@@ -181,9 +185,6 @@ class Dataframe:
             filename = entry.attrib["name"]
             resolution = (entry.attrib["width"], entry.attrib["height"])
 
-            if entry.attrib['id'] == '57':
-                print(entry.attrib['id'])
-
             try:
                 bounding_boxes = [b.attrib for b in entry.iter('box')]
             except IndexError:
@@ -193,9 +194,21 @@ class Dataframe:
 
         return img_list
 
-    def _load_images(self, entry, root_folder):
+    def _load_images(self, entry, entry_folder):
+        def clean_img_path(img_path, entry_folder):
+            split_path = entry_folder.split('/')
+            new_img_path = img_path
+
+            split_path.reverse()
+
+            for i in split_path:
+                if i not in new_img_path:
+                    new_img_path = i + '/' + new_img_path
+
+            return new_img_path
+
         for i in self.data[entry]:
-            img = cv.imread(root_folder + i.image_path, cv.IMREAD_GRAYSCALE)
+            img = cv.imread(clean_img_path(i.image_path, entry_folder), cv.IMREAD_GRAYSCALE)
 
 #           new_img, new_img_boxes = format_image(img, i.coco_bounding_boxes, input_size=self.image_size)
 #           for k in range(len(i.bounding_boxes)):

@@ -19,8 +19,28 @@ class Image:
             y = (float(box['ytl']))
 
             w = abs((float(box['xtl'])) - (float(box['xbr'])))
-            h = abs((float(box['ytl'])) - (float(box['ybr'])))
+            h = abs((float(box['ytl']) - (float(box['ybr']))))
 
             bounding_boxes.append([x, y, w, h])
+
+        return bounding_boxes
+
+    @property
+    def pascal_voc_bounding_boxes(self):
+        bounding_boxes = []
+        for box in self.bounding_boxes:
+            xmin = (float(box['xtl']))
+            ymin = (float(box['ytl']))
+
+            ymax = (float(box['ybr']))
+            xmax = (float(box['xbr']))
+
+            if ymax > float(self.resolution[1]):
+                ymax = float(self.resolution[1])
+
+            if xmax > float(self.resolution[0]):
+                xmax = float(self.resolution[0])
+
+            bounding_boxes.append([xmin, ymin, xmax, ymax])
 
         return bounding_boxes

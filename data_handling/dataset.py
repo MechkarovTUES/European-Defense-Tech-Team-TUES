@@ -18,13 +18,10 @@ class MineDataset(Dataset):
 
         image = entry.image.astype(np.float32)
 
-        boxes = np.asarray(entry.coco_bounding_boxes)
+        boxes = np.asarray(entry.pascal_voc_bounding_boxes)
 
         target = {}
         if boxes.any():
-            boxes[:, 2] = boxes[:, 0] + boxes[:, 2]
-            boxes[:, 3] = boxes[:, 1] + boxes[:, 3]
-
             area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
             area = torch.as_tensor(area, dtype=torch.float32)
 
