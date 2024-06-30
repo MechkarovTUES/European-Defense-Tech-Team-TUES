@@ -8,6 +8,6 @@ while True:
     msg = connection.recv_match(blocking=False)
     if not msg:
         continue
-    if msg.msgname == "HEARTBEAT":
+    if msg.msgname == "GPS_RAW_INT":
         print(msg)
     

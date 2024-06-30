@@ -1,28 +1,34 @@
 import cv2
 
-cap = cv2.VideoCapture(3)
+origin = cv2.VideoCapture(0)
+thermal = cv2.VideoCapture(3)
 
-if not cap.isOpened():
+if not origin.isOpened():
     print("Error: Could not open video device")
     exit()
 
 # Set resolution
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+origin.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+origin.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
 
 # Print some properties
-print("Frame Width: ", cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-print("Frame Height: ", cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-print("FPS: ", cap.get(cv2.CAP_PROP_FPS))
-print("Brightness: ", cap.get(cv2.CAP_PROP_BRIGHTNESS))
-print("Contrast: ", cap.get(cv2.CAP_PROP_CONTRAST))
+# print("Frame Width: ", origin.get(cv2.CAP_PROP_FRAME_WIDTH))
+# print("Frame Height: ", origin.get(cv2.CAP_PROP_FRAME_HEIGHT))
+# print("FPS: ", origin.get(cv2.CAP_PROP_FPS))
+# print("Brightness: ", origin.get(cv2.CAP_PROP_BRIGHTNESS))
+# print("Contrast: ", origin.get(cv2.CAP_PROP_CONTRAST))
 
 for i in range(4):
-    ret, frame = cap.read()
+    ret1, frameOrigin = origin.read()
+    ret2, frameThermal = thermal.read()
 
-    if not ret:
+    if not ret1 and not ret2:
         print("Error: Could not read frame")
         break
 
-    cv2.imwrite(f'thermal/image_{i}.jpg', frame)
-cap.release()
+    cv2.imwrite(f'thermal/image_{i}.jpg', frameThermal)
+    cv2.imwrite(f'origin/image_{i}.jpg', frameOrigin)
+
+origin.release()
+thermal.release()
